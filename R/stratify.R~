@@ -1,0 +1,64 @@
+
+
+stratify <- function(dat, groups){
+  # dat must samples in columns and edges in rows ..  
+  stopifnot(class(dat) == "matrix")
+  stopifnot(class(groups) == "numeric", length(groups) == 1)
+  .Call( "stratem", dat, groups, PACKAGE = "hyperstrat" )
+}
+
+
+printworkbar <- function() {
+  cat("\nStratifying...\n||")
+  for (i in 1:50) cat ("-")
+  cat("||\n  ")
+}
+
+
+
+multistrat <- function(dat, groups, times, collapse=T) {
+  # dat is samples in columns and edges in rows ..  
+  stopifnot(class(dat) == "matrix")
+  stopifnot(class(groups) == "numeric", length(groups) == 1)
+  stopifnot(class(times) == "numeric", length(times) == 1)
+  printworkbar()
+  reslist <- vector("list", times)
+  if (times < 50) {chunksize <- as.integer(50/times); printfreq <- 1}
+  else {chunksize <- 1; printfreq <- as.integer(50/times)+1;} # when to print a progress update
+  for (i in 1:times) {
+    # produce a stratification
+    reslist[[i]] <- .Call( "stratem", dat, groups, PACKAGE = "hyperstrat")
+    if (i %% printfreq == 0) {for (k in 1:chunksize) {cat("=")}}
+  }
+  cat(">\n  Stratifications Done!\n")
+  if (collapse) {
+    cat(">\n  Collapsing ... \n")
+    res1 <- collapseStrats(reslist)
+    return(res1)
+  } else {
+    return(reslist)
+  }
+}
+
+
+
+parmultistrat <- function(dat, groups, times=1, threads=1, collapse=F) {
+  # dat must samples in columns and edges in rows ..  
+  stopifnot(class(dat) == "matrix")
+  stopifnot(class(groups) == "numeric", length(groups) == 1)
+  stopifnot(class(times) == "numeric", length(times) == 1)
+  require(multicore)
+  print("Starting parallel processes...")
+  reslist <- mclapply(X=1:times, function(i) {
+    cat(i,"-:-"); stratify(dat, groups);
+  }, mc.cores=threads)
+  print("Done!")
+  if (collapse) {
+    cat(">\n  Collapsing ... \n")
+    res1 <- collapsestrats(reslist)
+    return(res1)
+  } else {
+    return(reslist)
+  }
+}
+

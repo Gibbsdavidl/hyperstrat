@@ -1,0 +1,47 @@
+optimizeColOrder <- function(table1, table2) { 
+  # returns a new ordering for *TABLE 2*
+  stopifnot(class(table1) == "matrix")
+  stopifnot(class(table2) == "matrix")
+  stopifnot(ncol(table1) == ncol(table2))  
+  .Call("optimizeColOrder", table1, table2, PACKAGE = "hyperstrat")
+}
+
+
+collapsematrices <- function(reslist) {  
+  # This works on any list of matrices 
+  # The variables (groups) must be in the columns
+  # so it works for either the thetas or the group
+  # assignment matrix.
+  stopifnot(class(reslist) == "list")
+  if (length(reslist) == 1) {
+    return(reslist)
+  } else if (length(reslist) > 2) {
+    mid <- floor(length(reslist)/2)
+    a <- collapsestrats(reslist[1:mid])
+    b <- collapsestrats(reslist[(mid+1):length(reslist)])
+    c <- optimizeColOrder(a[[1]], b[[1]])
+    res0 <- list(a[[1]][,c[[1]]] + b[[1]][,c[[2]]])
+  } else {
+    c <- optimizeColOrder(reslist[[1]], reslist[[2]])
+    res0 <- list(reslist[[1]][,c[[1]]] + reslist[[2]][,c[[2]]])
+  }
+  res0
+}    
+    
+
+collapsestrats <- function(reslist) {  
+  # This works on the results from multistrat
+  stopifnot(class(reslist) == "list")
+  if (length(reslist) < 2) {
+    return(reslist[[1]])
+  } else if (length(reslist) > 2) {
+    mid <- floor(length(reslist)/2)
+    reslist <- c(list(collapsestrats(reslist[1:mid])),
+                 list(collapsestrats(reslist[(mid+1):length(reslist)])))
+  }  
+  c <- optimizeColOrder(reslist[[1]][[1]], reslist[[2]][[1]]) # on groups
+  list((reslist[[1]][[1]][,c[[1]]] + reslist[[2]][[1]][,c[[2]]])/2,
+       (reslist[[1]][[2]][c[[1]],] + reslist[[2]][[2]][c[[2]],])/2) 
+}    
+
+

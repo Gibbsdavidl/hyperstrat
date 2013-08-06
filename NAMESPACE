@@ -1,0 +1,12 @@
+useDynLib(hyperstrat)
+export(stratify,
+       multistrat,
+       collapsestrats,
+       collapsematrices,
+       findGroupN,
+       parmultistrat,
+       comparestrats,
+       mi,
+       generate,
+       teststrat,
+       optimizeColOrder)

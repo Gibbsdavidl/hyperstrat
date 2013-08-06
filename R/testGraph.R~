@@ -1,0 +1,47 @@
+
+
+generate <- function(params=8, nodes=20, groups=4, paramsPerGroup=2) {
+
+  # generate the parameters
+  theta <- matrix(nrow=groups, ncol=params, data=0)
+  for (i in 1:groups) {
+    theta[i, sample(1:params, size=paramsPerGroup, replace=F)] <- runif(paramsPerGroup)
+  }
+  # make the group assignments
+  q <- matrix(nrow=nodes, ncol=groups, data=0)
+  nodegrps <- sample(1:groups, size=nodes, replace=T)
+  for (i in 1:groups) {
+    for (j in 1:nodes) {
+      if (nodegrps[j] == i) {
+        q[j,i] <- 1
+      }
+    }
+  }
+  # make the adjacency matrix
+  a <- matrix(ncol=params, nrow=nodes, data=0)
+  for (i in 1:nodes) {
+    for (j in 1:params) {
+      if (runif(1) < theta[nodegrps[i], j]) {
+        a[i,j] <- 1
+      }
+    }
+  }
+  list(q, theta, nodegrps, a)
+}
+
+
+
+
+
+
+#stratify <- function(dat, groups){
+#optimizeColOrder <- function(table1, table2) { 
+#multistrat <- function(dat, groups, times, collapse=T) {
+#collapsematrices <- function(reslist) {  
+#collapsestrats <- function(reslist) {  
+#parmultistrat <- function(dat, groups, times=1, threads=1, collapse=F) {
+#comparestrats <- function(strat1, strat2) {
+#findGroupN <- function(dat, groupRange, times, threads=1) {
+#pkl <- function(a,b,k,l,m) {
+#pk <- function(a,k,m) {
+#mi <- function(strat1, strat2) {
